@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
-  // Skip auth middleware when DATABASE_URL is not configured (development without DB)
+export function proxy(req: NextRequest) {
+  // Skip auth when DATABASE_URL is not configured (development without DB)
   if (!process.env.DATABASE_URL) {
     return NextResponse.next();
   }
