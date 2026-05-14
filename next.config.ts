@@ -8,11 +8,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
-  eslint: {
-    // Allow production builds to succeed even with ESLint warnings
-    // ESLint is still run separately via `npm run lint`
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     // Also ignore TS errors from generated Prisma client during build
     ignoreBuildErrors: false,
