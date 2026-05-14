@@ -1,0 +1,507 @@
+// Prisma Schema — Party Yacht Goa Enterprise Platform
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────
+// AUTH MODELS (NextAuth)
+// ─────────────────────────────────────────────────────────
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────────────────
+// USERS & TEAM
+// ─────────────────────────────────────────────────────────
+
+model User {
+  id            String     @id @default(cuid())
+  name          String?
+  email         String     @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          UserRole   @default(CUSTOMER)
+  phone         String?
+  isActive      Boolean    @default(true)
+  lastLoginAt   DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  bookings      Booking[]     @relation("CustomerBookings")
+  assignedLeads Lead[]        @relation("AssignedLeads")
+  notes         LeadNote[]
+  auditLogs     AuditLog[]
+  notifications Notification[]
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  SALES
+  OPERATIONS
+  ACCOUNTANT
+  CUSTOMER
+}
+
+// ─────────────────────────────────────────────────────────
+// YACHT FLEET
+// ─────────────────────────────────────────────────────────
+
+model Yacht {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  name         String
+  tagline      String?
+  description  String?  @db.Text
+  capacity     Int
+  length       String?
+  priceFrom    Float    @default(0)
+  priceUnit    String   @default("per hour")
+  pricePerHour Float?
+  priceHalfDay Float?
+  priceFullDay Float?
+  category     String[]
+  occasions    String[]
+  badge        String?
+  badgeColor   String?
+  highlight    String?
+  rating       Float    @default(5.0)
+  reviewCount  Int      @default(0)
+  isActive     Boolean  @default(true)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  images    YachtImage[]
+  features  YachtFeature[]
+  specs     YachtSpec[]
+  pricing   YachtPricing[]
+  bookings  Booking[]
+  timeSlots TimeSlot[]
+  leads     Lead[]
+}
+
+model YachtImage {
+  id       String  @id @default(cuid())
+  url      String
+  publicId String?
+  alt      String?
+  order    Int     @default(0)
+  isCover  Boolean @default(false)
+  yachtId  String
+  yacht    Yacht   @relation(fields: [yachtId], references: [id], onDelete: Cascade)
+}
+
+model YachtFeature {
+  id      String @id @default(cuid())
+  name    String
+  order   Int    @default(0)
+  yachtId String
+  yacht   Yacht  @relation(fields: [yachtId], references: [id], onDelete: Cascade)
+}
+
+model YachtSpec {
+  id      String @id @default(cuid())
+  label   String
+  value   String
+  order   Int    @default(0)
+  yachtId String
+  yacht   Yacht  @relation(fields: [yachtId], references: [id], onDelete: Cascade)
+}
+
+model YachtPricing {
+  id       String        @id @default(cuid())
+  duration String        // "1hr" | "2hr" | "halfday" | "fullday"
+  label    String        // "1 Hour" | "Half Day" etc.
+  price    Float
+  season   PricingSeason @default(REGULAR)
+  yachtId  String
+  yacht    Yacht         @relation(fields: [yachtId], references: [id], onDelete: Cascade)
+}
+
+model TimeSlot {
+  id        String   @id @default(cuid())
+  date      DateTime @db.Date
+  time      String
+  duration  String
+  isBooked  Boolean  @default(false)
+  bookingId String?
+  yachtId   String
+  yacht     Yacht    @relation(fields: [yachtId], references: [id], onDelete: Cascade)
+
+  @@unique([yachtId, date, time, duration])
+}
+
+enum PricingSeason {
+  REGULAR
+  PEAK
+  OFF_SEASON
+}
+
+// ─────────────────────────────────────────────────────────
+// CRM — LEADS
+// ─────────────────────────────────────────────────────────
+
+model Lead {
+  id       String @id @default(cuid())
+  leadCode String @unique // PYG-L-001
+
+  // Customer info
+  name     String
+  email    String
+  phone    String
+  whatsapp String?
+  country  String  @default("India")
+
+  // Inquiry
+  yachtId     String?
+  yacht       Yacht?    @relation(fields: [yachtId], references: [id])
+  yachtName   String?
+  date        DateTime?
+  time        String?
+  duration    String?
+  adults      Int?
+  children    Int       @default(0)
+  occasion    String?
+  addons      String[]
+  pickupPoint String?
+  message     String?   @db.Text
+  budget      String?
+
+  // CRM
+  status       LeadStatus   @default(NEW)
+  priority     LeadPriority @default(MEDIUM)
+  source       String       @default("website")
+  assignedToId String?
+  assignedTo   User?        @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  tags         String[]
+
+  // Tracking
+  followUpAt  DateTime?
+  convertedAt DateTime?
+  bookingId   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notes      LeadNote[]
+  activities Activity[]
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  FOLLOW_UP
+  QUOTED
+  CONFIRMED
+  CANCELLED
+  LOST
+}
+
+enum LeadPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model LeadNote {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  isPrivate Boolean  @default(false)
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────
+// BOOKINGS
+// ─────────────────────────────────────────────────────────
+
+model Booking {
+  id          String @id @default(cuid())
+  bookingCode String @unique // PYG-B-2024-001
+
+  // Customer
+  customerId       String?
+  customer         User?   @relation("CustomerBookings", fields: [customerId], references: [id])
+  customerName     String
+  customerEmail    String
+  customerPhone    String
+  customerWhatsapp String?
+  country          String?
+
+  // Booking details
+  yachtId     String
+  yacht       Yacht    @relation(fields: [yachtId], references: [id])
+  date        DateTime @db.Date
+  time        String
+  duration    String
+  durationHrs Float    @default(2)
+  adults      Int
+  children    Int      @default(0)
+  occasion    String?
+  addons      String[]
+  pickupPoint String?
+  specialRequests String? @db.Text
+
+  // Financial
+  basePrice   Float
+  addonsPrice Float         @default(0)
+  discount    Float         @default(0)
+  taxAmount   Float         @default(0)
+  totalAmount Float
+  paidAmount  Float         @default(0)
+  currency    String        @default("INR")
+
+  // Status
+  status        BookingStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+
+  // Meta
+  leadId        String?
+  internalNotes String?  @db.Text
+  cancelReason  String?
+  rescheduleOf  String?
+  confirmedAt   DateTime?
+  cancelledAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments   Payment[]
+  invoices   Invoice[]
+  activities Activity[]
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+  RESCHEDULED
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  REFUNDED
+  FAILED
+}
+
+// ─────────────────────────────────────────────────────────
+// PAYMENTS & INVOICES
+// ─────────────────────────────────────────────────────────
+
+model Payment {
+  id          String        @id @default(cuid())
+  paymentCode String        @unique // PYG-P-001
+
+  bookingId String
+  booking   Booking       @relation(fields: [bookingId], references: [id])
+
+  amount    Float
+  currency  String        @default("INR")
+  method    PaymentMethod @default(RAZORPAY)
+  status    PaymentStatus @default(PENDING)
+
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  razorpaySignature String?
+
+  notes     String?
+  receipt   String?
+  paidAt    DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PaymentMethod {
+  RAZORPAY
+  STRIPE
+  CASH
+  BANK_TRANSFER
+  UPI
+  CHEQUE
+}
+
+model Invoice {
+  id          String        @id @default(cuid())
+  invoiceCode String        @unique // PYG-INV-2024-001
+
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id])
+
+  subtotal    Float
+  discount    Float   @default(0)
+  taxAmount   Float   @default(0)
+  total       Float
+  paidAmount  Float   @default(0)
+  balance     Float
+
+  status  InvoiceStatus @default(UNPAID)
+  dueDate DateTime?
+  paidAt  DateTime?
+
+  pdfUrl    String?
+  notes     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum InvoiceStatus {
+  DRAFT
+  UNPAID
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+// ─────────────────────────────────────────────────────────
+// ACTIVITY & AUDIT LOGS
+// ─────────────────────────────────────────────────────────
+
+model Activity {
+  id        String  @id @default(cuid())
+  type      String  // lead_created, booking_confirmed, payment_received, etc.
+  entity    String  // lead | booking | yacht | user
+  entityId  String
+  message   String
+  metadata  Json?
+  userId    String?
+
+  leadId    String?
+  lead      Lead?    @relation(fields: [leadId], references: [id])
+  bookingId String?
+  booking   Booking? @relation(fields: [bookingId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id         String @id @default(cuid())
+  userId     String
+  user       User   @relation(fields: [userId], references: [id])
+  action     String // CREATE | UPDATE | DELETE | LOGIN | LOGOUT
+  resource   String // User | Booking | Lead | Yacht | Payment
+  resourceId String?
+  oldData    Json?
+  newData    Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(cuid())
+  title     String
+  message   String
+  type      String   @default("info") // info | success | warning | error
+  isRead    Boolean  @default(false)
+  link      String?
+  metadata  Json?
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────
+// CONTENT MANAGEMENT
+// ─────────────────────────────────────────────────────────
+
+model BlogPost {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  excerpt     String?
+  content     String    @db.Text
+  coverImage  String?
+  tags        String[]
+  isPublished Boolean   @default(false)
+  publishedAt DateTime?
+  authorId    String?
+  seoTitle    String?
+  seoDesc     String?
+  views       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  location  String?
+  occasion  String?
+  rating    Int      @default(5)
+  text      String   @db.Text
+  avatar    String?
+  yachtName String?
+  isActive  Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────
+// SETTINGS
+// ─────────────────────────────────────────────────────────
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  group     String   @default("general")
+  label     String?
+  updatedAt DateTime @updatedAt
+}

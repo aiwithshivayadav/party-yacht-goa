@@ -1,0 +1,351 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,600&family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gold: #c9a96e;
+  --gold-light: #e8d5a3;
+  --gold-dark: #a07c45;
+  --navy-deep: #020408;
+  --navy: #0a1628;
+  --navy-mid: #0f1f3d;
+  --glass: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(201, 169, 110, 0.15);
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+  --font-inter: 'Inter', system-ui, sans-serif;
+  --font-playfair: 'Playfair Display', Georgia, serif;
+}
+
+/* ─── Base ─────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: auto; /* Lenis handles this */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: #020408;
+  color: #f0ede8;
+  font-family: var(--font-inter);
+  overflow-x: hidden;
+}
+
+/* ─── Custom Scrollbar ────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #020408; }
+::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-light); }
+
+/* ─── Selection ───────────────────────────────────────────────── */
+::selection { background: rgba(201,169,110,0.3); color: var(--gold-light); }
+
+/* ─── Custom Cursor (disabled — system cursor is shown) ──────── */
+.cursor-ring, .cursor-dot { display: none !important; }
+
+/* ─── Luxury Typography ───────────────────────────────────────── */
+.font-heading { font-family: var(--font-cormorant); }
+.font-accent  { font-family: var(--font-playfair); }
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #c9a96e 0%, #e8d5a3 50%, #c9a96e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #e8d5a3 40%, #c9a96e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Glass Cards ─────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(201,169,110,0.12);
+  border-radius: 16px;
+}
+
+.glass-card-dark {
+  background: rgba(2,4,8,0.6);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(201,169,110,0.1);
+}
+
+/* ─── Gold Button ─────────────────────────────────────────────── */
+.btn-gold {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #c9a96e, #e8d5a3, #c9a96e);
+  background-size: 200% 100%;
+  color: #020408;
+  font-family: var(--font-inter);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 2px;
+  overflow: hidden;
+  transition: background-position 0.4s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+.btn-gold:hover {
+  background-position: 100% 0;
+  transform: translateY(-2px);
+  box-shadow: 0 20px 60px rgba(201,169,110,0.35);
+}
+
+.btn-outline-gold {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 31px;
+  background: transparent;
+  color: var(--gold-light);
+  font-family: var(--font-inter);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid rgba(201,169,110,0.5);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.btn-outline-gold:hover {
+  background: rgba(201,169,110,0.08);
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: translateY(-2px);
+}
+
+/* ─── Section Labels ──────────────────────────────────────────── */
+.section-label {
+  font-family: var(--font-inter);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-label::before {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 1px;
+  background: var(--gold);
+}
+
+/* ─── Gold Divider ────────────────────────────────────────────── */
+.gold-divider {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  margin: 0 auto;
+}
+
+/* ─── Shimmer Effect ──────────────────────────────────────────── */
+.shimmer {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* ─── Smooth Image Reveal ─────────────────────────────────────── */
+.img-reveal {
+  overflow: hidden;
+}
+.img-reveal img {
+  transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.img-reveal:hover img {
+  transform: scale(1.08);
+}
+
+/* ─── Noise Texture Overlay ───────────────────────────────────── */
+.noise-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* ─── Pointer cursor on interactive elements ──────────────────── */
+a, button, [role="button"] { cursor: pointer; }
+
+/* ─── Lenis scroll ─────────────────────────────────────────────── */
+html.lenis, html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* ─── Scroll Progress Bar ─────────────────────────────────────── */
+#scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
+  z-index: 9998;
+  transform-origin: left;
+}
+
+/* ─── Marquee ──────────────────────────────────────────────────── */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+.marquee-track:hover { animation-play-state: paused; }
+
+/* ─── Masonry Gallery ─────────────────────────────────────────── */
+.masonry-grid {
+  columns: 3;
+  column-gap: 12px;
+}
+.masonry-grid-item {
+  break-inside: avoid;
+  margin-bottom: 12px;
+}
+@media (max-width: 768px) {
+  .masonry-grid { columns: 2; }
+}
+@media (max-width: 480px) {
+  .masonry-grid { columns: 1; }
+}
+
+/* ─── Loading Screen ──────────────────────────────────────────── */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: #020408;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── Particle Canvas ─────────────────────────────────────────── */
+#particle-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ─── Keyframe Animations ─────────────────────────────────────── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(201,169,110,0.4); }
+  50%       { box-shadow: 0 0 0 12px rgba(201,169,110,0); }
+}
+
+/* ─── Utilities ───────────────────────────────────────────────── */
+.container-luxury {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+@media (max-width: 1024px) {
+  .container-luxury { padding: 0 32px; }
+}
+@media (max-width: 768px) {
+  .container-luxury { padding: 0 20px; }
+}
+@media (max-width: 480px) {
+  .container-luxury { padding: 0 16px; }
+}
+
+/* ─── Mobile-first Button Sizing ─────────────────────────────── */
+@media (max-width: 640px) {
+  .btn-gold, .btn-outline-gold {
+    padding: 14px 24px;
+    font-size: 12px;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ─── Touch targets (min 44px) ───────────────────────────────── */
+@media (max-width: 768px) {
+  .btn-gold, .btn-outline-gold { min-height: 52px; }
+}
+
+/* ─── Mobile sticky CTA bar ──────────────────────────────────── */
+.mobile-cta-bar {
+  display: none;
+}
+@media (max-width: 768px) {
+  .mobile-cta-bar {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 8000;
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    background: rgba(2,4,8,0.97);
+    border-top: 1px solid rgba(201,169,110,0.15);
+    backdrop-filter: blur(20px);
+    gap: 10px;
+    align-items: center;
+  }
+}
+
+/* ─── Safe area padding for mobile ───────────────────────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+/* ─── Hero mobile adjustments ────────────────────────────────── */
+@media (max-width: 640px) {
+  #particle-canvas { display: none; } /* Save CPU on mobile */
+}
+
+/* ─── Prevent text overflow ──────────────────────────────────── */
+h1, h2, h3, h4 { overflow-wrap: break-word; word-break: break-word; }
+
+/* ─── Improved focus styles (accessibility) ──────────────────── */
+*:focus-visible {
+  outline: 2px solid rgba(201,169,110,0.6);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+*:focus:not(:focus-visible) { outline: none; }
